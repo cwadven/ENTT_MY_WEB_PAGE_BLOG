@@ -1,0 +1,19 @@
+{%extends 'base.html'%}
+
+{%block contents%}
+<div style="margin:3% 5%; height:55%;">
+    <h1><a href="../mypage/">마이페이지</a></h1>
+    <h3>공지 내용 메시지바꾸기</h3>
+<form method="POST" action="{%url 'main_message'%}">
+    {%csrf_token%}
+    1번째로 큰 글자 : <input type="text" name="big_message" value="{{big_message}}" required/><br>
+    2번째로 큰 글자 : <input type="text" name="middle_message" value="{{middle_message}}" required/><br>
+    3번째로 큰 글자 : <input type="text" name="low_message" value="{{low_message}}" required/><br>
+    D-Day 메세지 : <input type="text" name="d_day_message" value="{{d_day_message}}" required/><br>
+    D-Day 년 : <input type="text" name="d_day_year" value="{{d_day_year}}" required/><br>
+    D-Day 월 : <input type="text" name="d_day_month" value="{{d_day_month}}" required/><br>
+    D-Day 일 : <input type="text" name="d_day_day" value="{{d_day_day}}" required/><br><br>
+    <input type="submit" value="적용하기">
+</form>
+</div>
+{%endblock%}

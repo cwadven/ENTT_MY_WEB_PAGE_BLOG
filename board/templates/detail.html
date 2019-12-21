@@ -1,0 +1,152 @@
+{%extends 'base.html'%}
+{%load staticfiles%}
+{%block contents%}
+<div style="margin:3% 5%; height:55%;">
+    {%if location == "myboard"%}
+    <h1><a href="/account/myboard/">내가 쓴 글</a></h1>
+    {%else%}
+        {%if blog.Category == '0'%}
+        <h1><a href="../notice/">공지사항</a></h1>
+        {%elif blog.Category == '1'%}
+        <h1><a href="../free/">자유게시판</a></h1>
+        {%elif blog.Category == '2'%}
+        <h1><a href="../gallery/">갤러리게시판</a></h1>
+        {%elif blog.Category == '9'%}
+        <h1><a href="../study/">공부게시판</a></h1>
+        {%else%}
+        <h1>지정중</h1>
+        {%endif%}
+    {%endif%}
+
+    {%if blog.Author == Author %}
+    <input style="float:left;" type="button" class="button modi_button" onclick="location.href='../modify' " value="수정하기">
+    <form method="POST" id="delete_form" action="{%url 'delete'%}">
+        {%csrf_token%}
+        <input type="button" class="button dele_button" value="삭제하기" onclick="delete_alert();">
+    </form>
+    {%endif%}
+
+    <h1>{{blog.Title}}</h1>
+    {{blog.sumnail_detail|safe}}
+    <div>{{blog.Body|safe}}</div>
+    {%if filename %}
+    첨부파일 : <a href="{{blog.files.url}}" download>{{filename}}</a><br>
+    {%endif%}
+    <br><b>글쓴이 : {{blog.get_generation|safe}}</b>
+    <br><br>
+    <br><br>
+    <h3>댓글</h3>
+    <form method="POST" action="{% url 'detail' blog.id %}">
+        {%csrf_token%}
+        <textarea name="get_Body" style="width:100%" rows="5" cols="20" required></textarea><br>
+        <input name="post_comment" type="submit" class="button write_button" value="댓글작성"/>
+    </form>
+    <br>
+
+    <!-- 댓글 -->
+
+    <table style="width:100%;">
+    {%for comment in comments%}
+    <tr>
+        <td colspan='2'><b>댓글 : {{comment.Body}}</b></td>
+        
+    </tr>
+    <tr>
+        <td><b>작성자 : {{comment.get_generation|safe}}</b></td><br>
+        <td style="float: right;"><b>작성일자 : {{comment.Created_at|date:"Y-m-d"}} / {{comment.Created_at|time:"H:i"}}</b></td>
+    </tr>
+    <tr>
+        <td>
+            {%if comment.Author == Author %}
+            <form method="POST" action="{% url 'detail' comment.id %}">
+                {%csrf_token%}
+                <input name="delete_comment" type="submit" class="button dele_button" value="댓글삭제"/>
+            </form>
+            {%else%}
+            <br>
+            {%endif%}
+        </td>
+    </tr>
+    <tr>
+        <td><br></td>
+    </tr>
+    {%endfor%}
+    </table>
+
+    <!-- 인접한 게시판 뜨게 만들기 -->
+    <h3>카테고리 다른 글</h3>
+    <table style="width: 100%;border-top: 1px dashed #444444;border-collapse: collapse;">
+    {%for after in near_detail_after%}
+    <tr>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;">
+        <a href=../detail/{{after.id}}>{{after.Title}}</a> {{after.howmanycomment}}
+        {{after.file_icon|safe}}
+        {%if after.new == "" %}
+        <span style="vertical-align:middle">{{after.change|safe}}</span></td>
+        {%else%}
+        <span style="vertical-align:middle">{{after.new|safe}}</span></td>
+        {%endif%}
+    </td>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;"><div style="float:right;">
+        {{after.get_generation|safe}} / {{after.Created_at|date:"y-m-d"}} / {{after.Created_at|time:"H:i"}} /
+        {%if after.howmanyhit %}
+        {{after.howmanyhit|safe}}
+        {%else%}
+        <img style="width:16px;height:16px;" src="{%static 'eye.png'%}"/> 0
+        {%endif%}
+    </div>
+    </td>
+    </tr>
+    {%endfor%}
+
+    <tr>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;">
+        <b style="text-decoration: underline;">{{blog.Title}}</b> {{blog.howmanycomment}}
+        {{blog.file_icon|safe}}
+        {%if blog.new == "" %}
+        <span style="vertical-align:middle">{{blog.change|safe}}</span></td>
+        {%else%}
+        <span style="vertical-align:middle">{{blog.new|safe}}</span></td>
+        {%endif%}
+    </td>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;"><div style="float:right;">
+        {{blog.get_generation|safe}} / {{blog.Created_at|date:"y-m-d"}} / {{blog.Created_at|time:"H:i"}} /
+        {%if blog.howmanyhit %}
+        {{blog.howmanyhit|safe}}
+        {%else%}
+        <img style="width:16px;height:16px;" src="{%static 'eye.png'%}"/> 0
+        {%endif%}
+    </div>
+    </td>
+    </tr>
+
+    {%for before in near_detail_before%}
+    <tr>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;">
+        <a href=../detail/{{before.id}}>{{before.Title}}</a> {{before.howmanycomment}}
+        {{before.file_icon|safe}}
+        {%if before.new == "" %}
+        <span style="vertical-align:middle">{{before.change|safe}}</span></td>
+        {%else%}
+        <span style="vertical-align:middle">{{before.new|safe}}</span></td>
+        {%endif%}
+    </td>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;"><div style="float:right;">
+        {{before.get_generation|safe}} / {{before.Created_at|date:"y-m-d"}} / {{before.Created_at|time:"H:i"}} /
+        {%if before.howmanyhit %}
+        {{before.howmanyhit|safe}}
+        {%else%}
+        <img style="width:16px;height:16px;" src="{%static 'eye.png'%}"/> 0
+        {%endif%}
+    </div>
+    </td>
+    </tr>
+    {%endfor%}
+    </table>
+    <br><br>
+    <br><br>
+
+
+</div>
+
+{%endblock%}

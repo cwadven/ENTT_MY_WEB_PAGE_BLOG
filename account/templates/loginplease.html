@@ -1,0 +1,28 @@
+{%extends 'base.html'%}
+{%load staticfiles%}
+{%block contents%}
+<style>
+    @media screen and (max-width:800px){ /*휴대폰에 따라서 바뀌게 만들기!!*/
+        #img_login {
+            position: absolute; 
+            width: 60%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+
+    @media screen and (max-width:480px){ /*휴대폰에 따라서 바뀌게 만들기!!*/
+        #img_login {
+            position: absolute; 
+            width: 80%;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+    }
+</style>
+<div style="margin:5% 10%; height:55%;">
+<div style="text-align: center;"><img onclick="showlogin();" id="img_login" src="{%static 'anoymous.png'%}"></div>
+</div>
+{%endblock%}

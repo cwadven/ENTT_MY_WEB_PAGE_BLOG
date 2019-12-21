@@ -1,0 +1,23 @@
+{%extends 'base.html'%}
+
+{%block contents%}
+<div style="margin:3% 5%; height:55%;">
+    <h1>마이페이지</h1>
+    <h3>가입정보</h3>
+    아이디 : {{profile.user}}<br>
+    이름 : {{profile.Name}}<br>
+    전화번호 : {{profile.Phone}}<br>
+    기수 : {{profile.Generation}}<br>
+    권한 : {%if profile.UserType == '0'%}<font color="red">미설정(관리자대기)</font>{%elif profile.UserType == '99'%}<font color="green">관리자권한</font>{%elif profile.UserType == '98'%}<font color="orange">운영진</font>{%else%}<font color="blue">권환확인</font>{%endif%}<br><br>
+    <input type="button" onclick = "location.href = '/account/myboard/' " value="내가 쓴 글"/>
+    <input type="button" onclick = "location.href = '/account/userupdate/' " value="회원정보수정"/>
+    <input type="button" onclick = "location.href = '/account/delete/' " value="회원탈퇴"/>
+    {%if profile.UserType == '99'%}
+    <input type="button" onclick = "location.href = '/account/main_message/' " value="공지MSG바꾸기"/>
+    <input type="button" onclick = "location.href = '/account/permission/' " value="회원관리"/>
+    {%elif profile.UserType == '98'%}
+    <input type="button" onclick = "location.href = '/account/main_message/' " value="공지MSG바꾸기"/>
+    <input type="button" onclick = "location.href = '/account/permission/' " value="회원관리"/>
+    {%endif%}
+</div>
+{%endblock%}

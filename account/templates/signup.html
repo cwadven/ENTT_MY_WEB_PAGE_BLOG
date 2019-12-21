@@ -1,0 +1,84 @@
+{%extends 'base.html'%}
+
+{%block contents%}
+<div style="margin:3% 5%; height:55%;">
+    <h1>회원가입</h1>
+    <form method="POST" action="{%url 'signup'%}" onsubmit="return LengthCheck()">
+        {%csrf_token%}
+        {% if messages %}
+            {% for message in messages %}
+            {{ message }}<br><br>
+            {% endfor %}
+        {% endif %}
+        <b>아이디 : </b><br>
+        <input class="input_text" id="username_id" type="text" name="username_id" onchange="username_change()" required/> <input style="background-color:#444444;" class="button" type="button" id="check" value="중복확인"> <div id="checking"></div><br>
+        <b>비밀번호 : </b><br>
+        <input class="input_text" type="password" name="password1" required/><br>
+        <b>비밀번호 확인 : </b><br>
+        <input class="input_text" type="password" name="password2" required/><br><br>
+        <div id="error"></div>
+        <b>이름 : </b><br>
+        <input class="input_text" type="text" name="name" required/><br>
+        <b>학번 : </b><br>
+        <input class="input_text" type="number" name="id_num" required/><br>
+        <b>전화번호( - 없이 적어주세요) : </b><br>
+        <input class="input_text" id="phone" type="number" maxlength="11" name="phone" oninput="maxLengthCheck(this);" required/><br><br>
+        <input style="background-color:rgb(252, 197, 46);" class="button" id="submit_check" name="signup_submit" type="submit" value="회원가입"/>
+        <script>
+          document.getElementById('submit_check').disabled = true;
+          //예전 jQuery라면 on이 아니라 bind나 live 
+          $("#username_id").on("propertychange change keyup paste input", function() {
+              var currentVal = $(this).val();
+              var oldVal;
+              if(currentVal == oldVal) {
+                  return;
+              }
+              oldVal = currentVal;
+              document.getElementById('checking').innerHTML = "아이디 중복확인 하세요!";
+              document.getElementById('submit_check').disabled = true;
+              $('#repeat_message').css("display","block");
+          });
+          function maxLengthCheck(object){
+          if (object.value.length > object.maxLength){
+            object.value = object.value.slice(0, object.maxLength);
+          }    
+        }
+        $("#check").click(function(){
+          if($('#username_id').val()==""){
+            alert("아이디를 입력해주세요!");
+          }else if(parseInt($('#username_id').val().length)<4){
+            alert("아이디는 4글자 이상으로 만들어주세요!!");
+          }else{
+              $.ajax({
+                  url : "/account/usercheck/",
+                  dataType:"json",
+                  data: {'username_id':$('#username_id').val(),'csrfmiddlewaretoken':'{{ csrf_token }}'},
+                  type: "POST"
+                  }).done(function(msg) {
+                  $('#checking').html(msg['message']);
+                  if (msg['state'] == "1"){
+                    document.getElementById('submit_check').disabled = false;
+                    $('#repeat_message').css("display","none");
+                  }else{
+                    document.getElementById('submit_check').disabled = true;
+                  }
+              });
+          }});
+          
+          function LengthCheck(){
+            if (document.getElementById('phone').value.length != 11){
+              alert("전화번호를 확인해주세요!");
+              return false;
+            }
+          }
+          </script>
+    </form><br>
+    
+<div style="font-weight: bolder;" id="repeat_message">중복확인을 해주세요!</div><br><br>
+<div style="font-weight: bolder; border: 1px solid #444444; padding:30px; text-align:center;">
+회원가입을하고 관리자가 승인을 해줘야된다<br>
+관리자에게 연락해서 권한달라고 하세요!!<br>
+010-7468-6889
+</div>
+</div>
+{%endblock%}

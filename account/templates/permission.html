@@ -1,0 +1,38 @@
+{%extends 'base.html'%}
+
+{%block contents%}
+<div style="margin:3% 5%; height:55%;">
+    <h1><a href="../mypage/">마이페이지</a></h1>
+    <h3>회원관리</h3>
+    <h4><span>1 : 회원승인, 3 : 외부인, 98 : 운영자</span></h4>
+{%for user in users%}
+<form style="display:inline-table" method="POST" action="{%url 'permission'%}">
+    {%csrf_token%}
+    이름 : {{user.Name}}<br>
+    권한 : <input type="text" name="permission_number" value="{{user.UserType}}" required/><br>
+    기수 : <input type="text" name="Generation" value="{{user.Generation}}" required/><br>
+    <input type="submit" value="적용하기"><br><br>
+    <input style="display: none;" type="text" name="id" value="{{user.id}}"/>
+</form>
+<form method="POST" action="{%url 'force_delete'%}">
+    {%csrf_token%}
+    <input style="display: none;" type="text" name="id" value="{{user.id}}"/>
+    <input style="display: none;" type="text" name="name" value="{{user.Name}}"/>
+    <input type="submit" value="강제탈퇴" onclick="return confirm_msg();">
+</form>
+<br>
+<hr>
+<br>
+{%endfor%}
+</div>
+<script>
+    function confirm_msg(){
+        if (confirm('정말로 회원을 강제 추방 시킬 것인가요?')) {
+            alert("회원을 탈퇴 시켰습니다!");
+            return true;
+        } else {
+            return false;
+        }
+    }
+</script>
+{%endblock%}

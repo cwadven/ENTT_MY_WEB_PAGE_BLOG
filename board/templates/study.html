@@ -1,0 +1,88 @@
+{%extends 'base.html'%}
+{%load staticfiles%}
+{%block contents%}
+
+<div style="margin:3% 5%; height:55%;">
+    <h1>
+        공부게시판
+        <form method="POST" action="{%url 'write'%}">
+            {%csrf_token%}
+            {% if user.is_authenticated %} <!--이거 나중에 권한 기준으로 바꿀 것-->
+            <input type="number" name="category" value="9" style="display:none;">
+            <input name="get_category" class="button write_button" type="submit" value="글쓰기"/>
+             {{error}}
+            {%else%}
+            {%endif%}
+        </form>
+        
+    </h1>
+<table style="width: 100%;border-top: 1px dashed #444444;border-collapse: collapse;">
+{%for a in posts%}
+<tr>
+    <td style="border-bottom: 1px dashed #444444;padding:3px;"><a href="../detail/{{a.id}}">{{a.Title}}</a> <b>{{a.howmanycomment}}</b>
+    {{a.file_icon|safe}}
+    {%if a.new == "" %}
+    <span style="vertical-align:middle">{{a.change|safe}}</span></td>
+    {%else%}
+    <span style="vertical-align:middle">{{a.new|safe}}</span></td>
+    {%endif%}
+    <td style="border-bottom: 1px dashed #444444;padding:3px;"><div style="float:right;">
+        {{a.get_generation|safe}} / {{a.Created_at|date:"y-m-d"}} / {{a.Created_at|time:"H:i"}} /
+        {%if a.howmanyhit %}
+        {{a.howmanyhit|safe}}
+        {%else%}
+        <img style="width:16px;height:16px;" src="{%static 'eye.png'%}"/> 0
+        {%endif%}
+    </div><br></td>
+</tr>
+{%endfor%}
+</table>
+
+<br>
+
+<!--
+<div style="text-align: center;">
+    <div>
+    <span>{{posts.number}}</span>
+    <span>/</span>
+    <span>{{posts.paginator.num_pages}}</span>
+    </div>
+    {%if posts.has_previous%}
+    <a href="?page=1">처음</a>
+    <a href="?page={{posts.previous_page_number}}">이전</a>
+    {%endif%}
+    {%if posts.has_next%}
+    <a href="?page={{posts.next_page_number}}">다음</a>
+    <a href="?page={{posts.paginator.num_pages}}">마지막</a>
+    {%endif%}
+</div>-->
+
+<div style="text-align: center;">
+        {% load el_pagination_tags %}
+            {% paginate 16 study_b %}
+            {% for entry in study_b %}
+            {% endfor %}
+        {% get_pages %}
+        {{ pages.get_rendered }}
+        <!--
+        {{ pages.current.url }}
+        {{ pages.current.path }}
+        {{ pages.current.number }}
+        {{ pages.previous.url }} 만약에 없을 경우 처음페이지
+        {{ pages.current.is_first }}
+        {{ pages.next.next.number }}
+        {{ pages.previous.url }}-->
+</div>
+
+<br>
+<form method="POST" action="{%url 'study'%}">
+        {%csrf_token%}
+        <div style="float:right">
+        <input type="text" name="find_select">
+        <input name="get_find" class="button write_button" type="submit" value="찾기"/>
+        </div>
+    </form>
+<br><br><br>
+</div>
+
+{%endblock%}

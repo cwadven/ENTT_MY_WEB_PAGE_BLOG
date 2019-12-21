@@ -1,0 +1,10 @@
+version: '3'
+
+services: 
+    django:
+        build: ./ #Dockerfile을 실행!
+        image: blog #build를 하면 blog라는 이미지로 build한다!
+        ports:
+            - "80:80"
+        volumes:
+            - ./:/usr/src/app #생성을 안뒤에 전부 저장!

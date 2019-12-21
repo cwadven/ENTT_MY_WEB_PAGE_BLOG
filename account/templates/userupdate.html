@@ -1,0 +1,26 @@
+{%extends 'base.html'%}
+
+{%block contents%}
+<div style="margin:3% 5%; height:55%;">
+  <h1><a href="../mypage/">마이페이지</a></h1>
+    <h3>회원정보수정</h3>
+    <form method="POST" action="{%url 'userupdate'%}" onsubmit="return LengthCheck()">
+            {%csrf_token%}
+    전화번호( - 없이 적어주세요) : <input id="phone" type="number" maxlength="11" name="phone" oninput="maxLengthCheck(this);" required/><br><br>
+    <input type="submit" value="수정하기">
+</form>
+<script>
+        function maxLengthCheck(object){
+              if (object.value.length > object.maxLength){
+                object.value = object.value.slice(0, object.maxLength);
+              }
+        }
+        function LengthCheck(){
+          if (document.getElementById('phone').value.length != 11){
+            alert("전화번호를 확인해주세요!");
+            return false;
+          }
+        }
+    </script>
+</div>
+{%endblock%}
