@@ -4,36 +4,37 @@
 
 <div style="margin:3% 5%; height:55%;">
     <h1>
-        자유게시판
+        {{board_name}}
         <form method="POST" action="{%url 'write'%}">
             {%csrf_token%}
             {% if user.is_authenticated %} <!--이거 나중에 권한 기준으로 바꿀 것-->
-            <input type="number" name="category" value="1" style="display:none;">
+            <input type="number" name="category" value="{{category}}" style="display:none;">
             <input name="get_category" class="button write_button" type="submit" value="글쓰기"/>
+             {{error}}
             {%else%}
             {%endif%}
         </form>
     </h1>
 <table style="width: 100%;border-top: 1px dashed #444444;border-collapse: collapse;">
-{%for a in posts%}
-<tr>
-    <td style="border-bottom: 1px dashed #444444;padding:3px;"><a href="../detail/{{a.id}}">{{a.Title}}</a> <b>{{a.howmanycomment}}</b>
-    {{a.file_icon|safe}}
-    {%if a.new == "" %}
-    <span style="vertical-align:middle">{{a.change|safe}}</span></td>
-    {%else%}
-    <span style="vertical-align:middle">{{a.new|safe}}</span></td>
-    {%endif%}
-    <td style="border-bottom: 1px dashed #444444;padding:3px;"><div style="float:right;">
-        {{a.get_generation|safe}} / {{a.Created_at|date:"y-m-d"}} / {{a.Created_at|time:"H:i"}} /
-        {%if a.howmanyhit %}
-        {{a.howmanyhit|safe}}
+    {%for a in posts%}
+    <tr>
+        <td style="border-bottom: 1px dashed #444444;padding:3px;"><a href="../detail/{{a.id}}">{{a.Title}}</a> <b>{{a.howmanycomment}}</b>
+        {{a.file_icon|safe}}
+        {%if a.new == "" %}
+        <span style="vertical-align:middle">{{a.change|safe}}</span></td>
         {%else%}
-        <img style="width:16px;height:16px;" src="{%static 'eye.png'%}"/> 0
+        <span style="vertical-align:middle">{{a.new|safe}}</span></td>
         {%endif%}
-    </div><br></td>
-</tr>
-{%endfor%}
+        <td style="border-bottom: 1px dashed #444444;padding:3px;"><div style="float:right;">
+            {{a.get_generation|safe}} / {{a.Created_at|date:"y-m-d"}} / {{a.Created_at|time:"H:i"}} /
+            {%if a.howmanyhit %}
+            {{a.howmanyhit|safe}}
+            {%else%}
+            <img style="width:16px;height:16px;" src="{%static 'eye.png'%}"/> 0
+            {%endif%}
+        </div><br></td>
+    </tr>
+    {%endfor%}
 </table>
 
 <br>
@@ -53,12 +54,13 @@
     <a href="?page={{posts.next_page_number}}">다음</a>
     <a href="?page={{posts.paginator.num_pages}}">마지막</a>
     {%endif%}
-</div>-->
+</div>
+-->
 
 <div style="text-align: center;">
         {% load el_pagination_tags %}
-            {% paginate 16 free_b %}
-            {% for entry in free_b %}
+            {% paginate 16 board_b %}
+            {% for entry in board_b %}
             {% endfor %}
         {% get_pages %}
         {{ pages.get_rendered }}
@@ -73,7 +75,7 @@
 </div>
 
 <br>
-<form method="POST" action="{%url 'free'%}">
+<form method="POST" action="{%url '_board' board_find %}">
         {%csrf_token%}
         <div style="float:right">
         <input type="text" name="find_select">

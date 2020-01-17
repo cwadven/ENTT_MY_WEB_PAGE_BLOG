@@ -184,44 +184,30 @@ def gallery(request):
     request.session['location'] = 'gallery' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
     return render(request, "gallery.html", {'posts':posts})
 
-def notice_board(request):
-    request.session['login_after'] = '/board/notice/'
-    notice_b = Board.objects.filter(Category="0").order_by('-Created_at')
+def _board(request, boardname):
+    request.session['login_after'] = '/board/' + boardname + '/'
+    if boardname == "notice":
+        category = "0"
+        request.session['location'] = 'notice' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
+        board_name = "공지사항"
+    elif boardname == "free":
+        category = "1"
+        request.session['location'] = 'free'
+        board_name = "자유게시판"
+    elif boardname == "study":
+        category = "9"
+        request.session['location'] = 'study'
+        board_name = "공부게시판"
+    board_find = boardname #게시글 찾기를 위해서 boardname에서 가져온 글을 저장한다!
+    board_b = Board.objects.filter(Category=category).order_by('-Created_at')
     if request.method == "POST":
         find_select = request.POST.get('find_select')
-        notice_b = Board.objects.filter(Category="0", Title__contains=find_select).order_by('-Created_at')
+        board_b = Board.objects.filter(Category=category, Title__contains=find_select).order_by('-Created_at')
         pass
-    paginator = Paginator(notice_b,16) #페이지네이션 만들기
+    paginator = Paginator(board_b,16) #페이지네이션 만들기
     page = request.GET.get('page') #페이지네이션 만들기
     posts = paginator.get_page(page) #페이지네이션 만들기
-    request.session['location'] = 'notice' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
-    return render(request, "notice.html", {'posts':posts, 'notice_b':notice_b})
-
-def study(request):
-    request.session['login_after'] = '/board/study/'
-    study_b = Board.objects.filter(Category="9").order_by('-Created_at')
-    if request.method == "POST":
-        find_select = request.POST.get('find_select')
-        study_b = Board.objects.filter(Category="9", Title__contains=find_select).order_by('-Created_at')
-        pass
-    paginator = Paginator(study_b,16) #페이지네이션 만들기
-    page = request.GET.get('page') #페이지네이션 만들기
-    posts = paginator.get_page(page) #페이지네이션 만들기
-    request.session['location'] = 'study' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
-    return render(request, "study.html", {'posts':posts, 'study_b':study_b})
-
-def free(request):
-    request.session['login_after'] = '/board/free/'
-    free_b = Board.objects.filter(Category="1").order_by('-Created_at')
-    if request.method == "POST":
-        find_select = request.POST.get('find_select')
-        free_b = Board.objects.filter(Category="1", Title__contains=find_select).order_by('-Created_at')
-        pass
-    paginator = Paginator(free_b,16) #페이지네이션 만들기
-    page = request.GET.get('page') #페이지네이션 만들기
-    posts = paginator.get_page(page) #페이지네이션 만들기
-    request.session['location'] = 'free' #내 위치 알기 위해서 삭제한후 다시 돌아기기 위해서
-    return render(request, "free.html", {'posts':posts, 'free_b':free_b})
+    return render(request, "board.html", {'posts':posts, 'board_b':board_b, 'board_name':board_name, 'board_find':board_find, 'category':category})
 
 @login_required(login_url='/account/login/')
 def write(request):
@@ -258,11 +244,11 @@ def write(request):
                 board_name = "공지사항"
             else:
                 del request.session['category'] #악용사항 없게
-                notice_b = Board.objects.filter(Category="0").order_by('-Created_at')
-                paginator = Paginator(notice_b,16) #페이지네이션 만들기
+                board_b = Board.objects.filter(Category="0").order_by('-Created_at')
+                paginator = Paginator(board_b,16) #페이지네이션 만들기
                 page = request.GET.get('page') #페이지네이션 만들기
                 posts = paginator.get_page(page) #페이지네이션 만들기
-                return render(request,'notice.html', {"error":"( 권한이 없습니다 )", "notice_b":notice_b, "posts":posts})
+                return render(request,'board.html', {"error":"( 권한이 없습니다 )", "board_b":board_b, "posts":posts, "board_find":"0", "board_name":"공지사항"})
 
         elif request.session.get('category','')=='1': #게시판 이름 보여주기
             board_name = "자유게시판"
@@ -280,60 +266,28 @@ def write(request):
     
     if request.session.get('category','')=='0' and request.method=="POST" and 'post' in request.POST: #여기는 저장하기
         if profile.UserType=="99": #권한이 99일 경우 관리자다!
-            make = Board()
-            make.Title = request.POST.get('get_title','')
-            make.Body = request.POST.get('get_body','')
-            make.Author = request.user
-            make.Created_at = timezone.datetime.now()
-            make.Category = request.session.get('category','')
-            make.HowMuch = 0
-            make.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
-            make.images = request.FILES.get('pic', False)
-            make.save()
-            return redirect('/board/detail/'+str(make.id))
+            board_id = write_board(request) #글을 쓰고 return 값으로 id를 준다!
+            return redirect('/board/detail/'+str(board_id))
         else:
             print("어디서 장난질?")
-    elif request.session.get('category','')=='1' and request.method=="POST" and 'post' in request.POST:#아직 넣지는 않았지만 운영진일 경우 and 추가해서 넣기 물론 운영진 아니면 보이지도 않게 만들긴 templatetag로 할 것임
-        make = Board()
-        make.Title = request.POST.get('get_title','')
-        make.Body = request.POST.get('get_body','')
-        make.Author = request.user
-        make.Created_at = timezone.datetime.now()
-        make.Category = request.session.get('category','')
-        make.HowMuch = 0
-        make.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
-        make.images = request.FILES.get('pic', False)
-        make.save()
-        return redirect('/board/detail/'+str(make.id))
-    elif request.session.get('category','')=='2' and request.method=="POST" and 'post' in request.POST: #아직 넣지는 않았지만 운영진일 경우 and 추가해서 넣기 물론 운영진 아니면 보이지도 않게 만들긴 templatetag로 할 것임
-        make = Board()
-        make.Title = request.POST.get('get_title','')
-        make.Body = request.POST.get('get_body','')
-        make.Author = request.user
-        make.Created_at = timezone.datetime.now()
-        make.Category = request.session.get('category','')
-        make.HowMuch = 0
-        make.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
-        make.images = request.FILES.get('pic', False)
-        make.save()
-        return redirect('/board/detail/'+str(make.id))
-    elif request.session.get('category','')=='3' and request.method=="POST" and 'post' in request.POST: #아직 넣지는 않았지만 운영진일 경우 and 추가해서 넣기 물론 운영진 아니면 보이지도 않게 만들긴 templatetag로 할 것임
-        print("정보게시판이여!")
-    elif request.session.get('category','')=='4' and request.method=="POST" and 'post' in request.POST: #아직 넣지는 않았지만 운영진일 경우 and 추가해서 넣기 물론 운영진 아니면 보이지도 않게 만들긴 templatetag로 할 것임
-        print("족보게시판이여!")
-    elif request.session.get('category','')=='9' and request.method=="POST" and 'post' in request.POST: #공부게시판
-        make = Board()
-        make.Title = request.POST.get('get_title','')
-        make.Body = request.POST.get('get_body','')
-        make.Author = request.user
-        make.Created_at = timezone.datetime.now()
-        make.Category = request.session.get('category','')
-        make.HowMuch = 0
-        make.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
-        make.images = request.FILES.get('pic', False)
-        make.save()
-        return redirect('/board/detail/'+str(make.id))
+
+    elif request.method=="POST" and 'post' in request.POST:#아직 넣지는 않았지만 운영진일 경우 and 추가해서 넣기 물론 운영진 아니면 보이지도 않게 만들긴 templatetag로 할 것임
+        board_id = write_board(request) #글을 쓰고 return 값으로 id를 준다!
+        return redirect('/board/detail/'+str(board_id))
     else:
         pass
 
     return render(request, "write.html")
+
+def write_board(request): #글을 쓰는 값이다
+    make = Board()
+    make.Title = request.POST.get('get_title','')
+    make.Body = request.POST.get('get_body','')
+    make.Author = request.user
+    make.Created_at = timezone.datetime.now()
+    make.Category = request.session.get('category','')
+    make.HowMuch = 0
+    make.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
+    make.images = request.FILES.get('pic', False)
+    make.save()
+    return make.id

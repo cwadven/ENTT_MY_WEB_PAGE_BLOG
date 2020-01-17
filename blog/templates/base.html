@@ -197,15 +197,15 @@
         }
 
         function shownotice(){
-            window.location.assign("/board/notice");
+            window.location.assign("{% url '_board' 'notice' %}");
         }
 
         function showfree(){
-            window.location.assign("/board/free");
+            window.location.assign("{% url '_board' 'free' %}");
         }
 
         function showstudy(){
-            window.location.assign("/board/study");
+            window.location.assign("{% url '_board' 'study' %}");
         }
 
         function showgallery(){
