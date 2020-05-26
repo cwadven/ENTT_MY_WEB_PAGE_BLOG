@@ -1,17 +1,19 @@
 {%extends 'base.html'%}
-
+{%load staticfiles%}
 {%block contents%}
-
+<link rel="stylesheet" href="{%static 'summernote-lite.css'%}">
+<script src="{%static 'summernote-lite.js'%}"></script>
 <div style="text-align: center;">
     <div id="loader"></div>
 <h1>[ 수정하기 ]</h1>
-<form method="POST" action="{%url 'modify'%}" enctype="multipart/form-data">
+<form id="write_form" method="POST" action="{%url 'modify'%}" enctype="multipart/form-data">
         {%csrf_token%}
     <h1>제목</h1>
     <input name="get_title" type="text" style="width:50%" value="{{blog.Title}}" required/><br>
     <h2>내용</h2>
 
     <script>
+        
             $(document).ready(function() {
                 $('#summernote').summernote({
                 height: 300,                 // set editor height
@@ -44,12 +46,14 @@
     2.5MB이상 이미지는 업로드 못합니다.<br><br>
     <!--<textarea name="get_body" style="width:50%" rows="25" cols="50" wrap="hard" required>{{blog.Body}}</textarea><br>-->
     {%if blog.Category == '2'%}
-    <b>첨부파일 : </b><input id="id_file" type="file" name="file"/><br><br>
+    <b>첨부파일 : </b><input id="id_file" type="file" multiple name="file"/><br><br>
     <b>썸네일 : </b><input type="file" id="id_pic" name="pic" accept="image/png,image/jpeg" onchange="chng();"><br><br>
     {%else%}
-    <b>첨부파일 : </b><input id="id_file" type="file" name="file"/><br><br>
+    <b>첨부파일 : </b><input id="id_file" type="file" multiple name="file"/><br><br>
     {%endif%}
     <input name="post" type="submit" class="button write_button" value="글쓰기" onclick="return show_load();"/><br><br>
 </form>
 </div>
+<br>
+<br>
 {%endblock%}

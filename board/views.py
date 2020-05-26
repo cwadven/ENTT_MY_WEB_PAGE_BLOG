@@ -18,7 +18,9 @@ def get_client_ip(request): #접속자 ip구하기
 
 @login_required(login_url='/account/login/')
 def detail(request, blog_id):
+    Main_Message_Show = Main_Message.objects.get(id=1)
     location = request.session.get('location','first')
+    selected_id = request.session.get('selected_id','none')
     profile=Profile.objects.get(
         user=request.user
     )
@@ -43,7 +45,7 @@ def detail(request, blog_id):
         for i in range(len(seen)):
             posts_p.append(Board.objects.get(id=seen[i]))
 
-        Main_Message_Show = Main_Message.objects.get(id=1)
+        
 
         content = {
             "posts_u":posts_u,
@@ -57,7 +59,7 @@ def detail(request, blog_id):
             "d_day_message":Main_Message_Show.d_day_message,
             "d_day_year":Main_Message_Show.d_day_year,
             "d_day_month":Main_Message_Show.d_day_month,
-            "d_day_day":Main_Message_Show.d_day_day
+            "d_day_day":Main_Message_Show.d_day_day,
         }
 
         return render(request, "main.html", content)
@@ -108,6 +110,7 @@ def detail(request, blog_id):
             comments = Comment.objects.filter(Article__id=blog_id).order_by('Created_at')
             request.session['blog_id'] = blog_id #id 값을 가지고 온 이유는 modify 이용하기 위해서
             filename = blog_detail.files.name[6:] #파일 이름만 보이게 하려고
+            filename2 = blog_detail.new_files.all() #파일 이름만 보이게 하려고
             user=request.user
             all_hit = Hitcount.objects.filter(IP=get_client_ip(request), Article__id=blog_id, date__gte=timezone.datetime.now()-datetime.timedelta(minutes=15))
             if all_hit: #여기서부터는 조회수를 만들기위해서 이 위에 all_hit부터 조회수
@@ -132,16 +135,19 @@ def detail(request, blog_id):
                 'blog':blog_detail,
                 'Author':str(user),
                 'filename':filename,
+                'filename2':filename2,
                 'comments':comments,
                 'location':location,
                 'near_detail_before':near_detail,
-                'near_detail_after':near_detail2
-                
+                'near_detail_after':near_detail2,
+                "big_message":Main_Message_Show.big_message,
+                "selected_id":selected_id
             }
             return render(request, 'detail.html', content)
 
 @login_required(login_url='/account/login/')
 def modify(request):
+    Main_Message_Show = Main_Message.objects.get(id=1)
     blog_detail = get_object_or_404(Board, pk=request.session.get('blog_id',''))
     user=request.user
     profile=Profile.objects.get(
@@ -150,20 +156,30 @@ def modify(request):
     if request.method == "POST": #전송했을 경우!
         blog_detail.Title = request.POST.get('get_title','')
         blog_detail.Body = request.POST.get('get_body','')
-        blog_detail.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
+        blog_detail.files = False #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴 (다중으로 가져오는 것을 추가해서 이제 필요가 없음! 하지만 전에 했던 것 때문에 유지중)
         blog_detail.images = request.FILES.get('pic', False)
         blog_detail.save()
+
+        file_list = request.FILES.getlist('file')
+
+        for item in file_list: 
+            files = Files.objects.create(post=blog_detail, files=item)
+            files.save()
+
         return redirect('/board/detail/'+str(blog_detail.id))
-    return render(request, 'modify.html',{'blog':blog_detail})
+    return render(request, 'modify.html',{'blog':blog_detail, "big_message":Main_Message_Show.big_message,})
 
 @login_required(login_url='/account/login/')
 def delete(request):
     location = request.session.get('location','first') #메인페이지에서 수정했을 경우에는 first여서 바로 바탕화면으로
+    selected_id = request.session.get('selected_id','none')
     if request.method == "POST":
         blog_detail = Board.objects.get(pk=request.session.get('blog_id',''))
         blog_detail.delete()
         if location == "first": #메인페이지에서 수정했을 경우에는 first여서 바로 바탕화면으로
             return redirect('/')
+        elif location == "select_board":
+            return redirect('/board/select_board/'+selected_id)
         elif location == "myboard":
             return redirect('/account/myboard/')
         else:
@@ -182,10 +198,41 @@ def gallery(request):
     page = request.GET.get('page') #페이지네이션 만들기
     posts = paginator.get_page(page) #페이지네이션 만들기
     request.session['location'] = 'gallery' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
-    return render(request, "gallery.html", {'posts':posts})
+
+    Main_Message_Show = Main_Message.objects.get(id=1)
+
+    return render(request, "gallery.html", {'posts':posts, "big_message":Main_Message_Show.big_message})
+
+
+def select_board(request, _id): #다른사람 작성한 글 보기
+    Main_Message_Show = Main_Message.objects.get(id=1)
+
+    try: # 해당 글쓴이가 없을 경우 예외처리
+        profile = Profile.objects.get(user__id=_id)
+        _user = profile.user
+        _user_name = profile.Name
+    except:
+        _user = "None"
+        _user_name = "None"
+
+    my_b = Board.objects.filter(Author=_user).order_by('-Created_at')
+
+    if request.method == "POST":
+        find_select = request.POST.get('find_select')
+        my_b = Board.objects.filter(Author=_user, Title__contains=find_select).order_by('-Created_at')
+        pass
+
+    paginator = Paginator(my_b,16) #페이지네이션 만들기
+    page = request.GET.get('page') #페이지네이션 만들기
+    posts = paginator.get_page(page) #페이지네이션 만들기
+    request.session['location'] = 'select_board' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
+    request.session['selected_id'] = _id
+
+    return render(request, "select_board.html", {'user_id':_id, 'user_name':_user_name, 'posts':posts, 'my_b':my_b, "big_message":Main_Message_Show.big_message})
 
 def _board(request, boardname):
     request.session['login_after'] = '/board/' + boardname + '/'
+    Main_Message_Show = Main_Message.objects.get(id=1)
     if boardname == "notice":
         category = "0"
         request.session['location'] = 'notice' #내 위치 알기 위해서 삭제한후 다시 돌아가기 위해서
@@ -207,10 +254,11 @@ def _board(request, boardname):
     paginator = Paginator(board_b,16) #페이지네이션 만들기
     page = request.GET.get('page') #페이지네이션 만들기
     posts = paginator.get_page(page) #페이지네이션 만들기
-    return render(request, "board.html", {'posts':posts, 'board_b':board_b, 'board_name':board_name, 'board_find':board_find, 'category':category})
+    return render(request, "board.html", {'posts':posts, 'board_b':board_b, 'board_name':board_name, 'board_find':board_find, 'category':category, "big_message":Main_Message_Show.big_message})
 
 @login_required(login_url='/account/login/')
 def write(request):
+    Main_Message_Show = Main_Message.objects.get(id=1)
     profile=Profile.objects.get(
         user=request.user
     )
@@ -235,7 +283,7 @@ def write(request):
         for i in range(len(seen)):
             posts_p.append(Board.objects.get(id=seen[i]))
 
-        return render(request, "main.html", {"posts_u":posts_u, "posts":posts, "posts_p":posts_p, "errorauth":"[메시지]\n회원가입 후\n관리자에게 권한을 부여 받아야\n글을 쓰거나 확인 할 수 있습니다!\n(관리자에게 카톡하세요!)", "errorauth_set":"block"})
+        return render(request, "main.html", {"posts_u":posts_u, "posts":posts, "posts_p":posts_p, "errorauth":"[메시지]\n회원가입 후\n관리자에게 권한을 부여 받아야\n글을 쓰거나 확인 할 수 있습니다!\n(관리자에게 카톡하세요!)", "errorauth_set":"block", "big_message":Main_Message_Show.big_message})
 
     if request.method=="POST" and 'get_category' in request.POST: #만약 0 일경우는 공지사항 
         request.session['category'] = request.POST.get("category")
@@ -248,7 +296,7 @@ def write(request):
                 paginator = Paginator(board_b,16) #페이지네이션 만들기
                 page = request.GET.get('page') #페이지네이션 만들기
                 posts = paginator.get_page(page) #페이지네이션 만들기
-                return render(request,'board.html', {"error":"( 권한이 없습니다 )", "board_b":board_b, "posts":posts, "board_find":"0", "board_name":"공지사항"})
+                return render(request,'board.html', {"error":"( 권한이 없습니다 )", "board_b":board_b, "posts":posts, "board_find":"0", "board_name":"공지사항", "big_message":Main_Message_Show.big_message})
 
         elif request.session.get('category','')=='1': #게시판 이름 보여주기
             board_name = "자유게시판"
@@ -262,7 +310,7 @@ def write(request):
             board_name = "공부게시판"
         else:
             board_name = "오류"
-        return render(request, "write.html", {'board_name':board_name})
+        return render(request, "write.html", {'board_name':board_name, "big_message":Main_Message_Show.big_message})
     
     if request.session.get('category','')=='0' and request.method=="POST" and 'post' in request.POST: #여기는 저장하기
         if profile.UserType=="99": #권한이 99일 경우 관리자다!
@@ -277,7 +325,7 @@ def write(request):
     else:
         pass
 
-    return render(request, "write.html")
+    return render(request, "write.html", {"big_message":Main_Message_Show.big_message})
 
 def write_board(request): #글을 쓰는 값이다
     make = Board()
@@ -287,7 +335,15 @@ def write_board(request): #글을 쓰는 값이다
     make.Created_at = timezone.datetime.now()
     make.Category = request.session.get('category','')
     make.HowMuch = 0
-    make.files = request.FILES.get('file', False) #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
+    make.files = False #파일 없을경우는 False로 올리고 있을 경우는 file녀석을 가져옴
     make.images = request.FILES.get('pic', False)
     make.save()
+
+    file_list = request.FILES.getlist('file')
+
+    for item in file_list: 
+        files = Files.objects.create(post=make, files=item)
+        files.save()
+
     return make.id
+

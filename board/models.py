@@ -3,6 +3,8 @@ from django.utils import timezone
 import datetime
 from account.models import Profile
 
+
+
 class Board(models.Model):
     Title = models.CharField(max_length=50) #제목
     Body = models.TextField() #내용
@@ -31,6 +33,13 @@ class Board(models.Model):
         except: #익명을 위해서 id나오게 삭제되니깐 이름은 알 수 없으므로...
             return "<span style='font-weight:bolder;color:grey;'>"+self.Author+"</span>"
 
+    def get_Phone(self):
+        try:
+            a = Profile.objects.get(user__username=self.Author)
+            return a.id#a.Phone
+        except: 
+            return "없습니다"
+
 
     def new(self): #최신
         if self.Created_at > timezone.now() - datetime.timedelta(days=1):
@@ -47,7 +56,9 @@ class Board(models.Model):
     def file_icon(self): #최신
         if len(self.files.name) > 5: #5글자 이상일경우로 했음!! 그러면 당연히 5글자 이상 아닌게 없을 것임!
             return "<img height='16px' src='/static/file.png'/>"
-        else:  #하루 지나면 안 최신
+        elif self.new_files.all():  #하루 지나면 안 최신
+            return "<img height='16px' src='/static/file.png'/>"
+        else:
             return ""
 
     def sumnail_detail(self): #최신
@@ -113,3 +124,12 @@ class Hittimecount(models.Model):
 
     def __str__(self):
         return '%s - %s' % (self.Article, self.HowMuch)
+
+class Files(models.Model):
+    Created_at = models.DateTimeField(auto_now_add=True) #생성 일자 및 시간
+    Updated_at = models.DateTimeField(auto_now=True) #수정 일자 및 시간
+    post = models.ForeignKey(Board, related_name='new_files', on_delete=models.CASCADE)
+    files = models.FileField(blank=True, null=True, upload_to='files/')
+
+    def __str__(self):
+        return '{} - {}'.format(self.post, self.files)

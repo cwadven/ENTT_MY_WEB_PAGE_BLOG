@@ -7,7 +7,7 @@ margin: 0;
 }
 
 article, aside, details, figcaption, figure, footer, header, hgroup,
-menu, nav, section {
+menu, section {
    display: block;
 }
 
@@ -107,7 +107,7 @@ table {
    bottom: 0; 
    width: 314px;
    font-size: 14px;
-   color: #9FA5A8;
+   color: black;
    padding: 0 15px;
    width:-webkit-fill-available;
 }
@@ -150,7 +150,7 @@ table {
 <div style="margin:3% 5%; height:55%;">
     <h1>
         갤러리게시판
-        <form method="POST" action="{%url 'write'%}">
+        <form style="display: contents;" method="POST" action="{%url 'write'%}">
             {%csrf_token%}
             {% if user.is_authenticated %} <!--이거 나중에 권한 기준으로 바꿀 것-->
             <input type="number" name="category" value="2" style="display:none;">
@@ -158,6 +158,13 @@ table {
             {%else%}
             {%endif%}
         </form>
+        <form style="display: contents;" method="POST" action="{%url 'gallery'%}">
+         {%csrf_token%}
+         <div style="float:right">
+         <input type="text" name="find_select">
+         <input name="get_find" class="button write_button" type="submit" value="찾기"/>
+         </div>
+         </form>
     </h1>
     {%for a in posts%}
    <a href="../detail/{{a.id}}"> <!-- 클릭 시 링크 설정 -->
@@ -224,13 +231,7 @@ table {
     </div>
     
     <br>
-    <form method="POST" action="{%url 'gallery'%}">
-            {%csrf_token%}
-            <div style="float:right">
-            <input type="text" name="find_select">
-            <input name="get_find" class="button write_button" type="submit" value="찾기"/>
-            </div>
-        </form>
+    
     <br><br><br>
     </div>
     

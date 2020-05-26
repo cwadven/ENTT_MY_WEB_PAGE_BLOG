@@ -11,7 +11,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'yz7@jfui8trh9a2rl#323szq*u8^+#k64cb+n+k(_q4d_(n4-!'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["http://entt.shop/", "*"]
 

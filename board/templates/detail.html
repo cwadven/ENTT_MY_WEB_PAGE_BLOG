@@ -4,6 +4,8 @@
 <div style="margin:3% 5%; height:55%;">
     {%if location == "myboard"%}
     <h1><a href="/account/myboard/">내가 쓴 글</a></h1>
+    {%elif location == "select_board"%}
+    <h1><a href="/board/select_board/{{selected_id}}">뒤로가기</a></h1>
     {%else%}
         {%if blog.Category == '0'%}
         <h1><a href="../notice/">공지사항</a></h1>
@@ -29,9 +31,15 @@
     <h1>{{blog.Title}}</h1>
     {{blog.sumnail_detail|safe}}
     <div>{{blog.Body|safe}}</div>
-    {%if filename %}
-    첨부파일 : <a href="{{blog.files.url}}" download>{{filename}}</a><br>
+    {%if filename2 %}
+    첨부파일 : 
+    {%for i in filename2%}
+    <a href="{{i.files.url}}" download>{{i.files.name|slice:"6:"}}</a>  
+    {%endfor%}
+    {%elif filename%}
+    첨부파일 : <a href="{{blog.files.url}}" download>{{filename}}</a>
     {%endif%}
+    <br>
     <br><b>글쓴이 : {{blog.get_generation|safe}}</b>
     <br><br>
     <br><br>
