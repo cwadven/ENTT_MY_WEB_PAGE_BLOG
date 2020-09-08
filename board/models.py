@@ -63,7 +63,7 @@ class Board(models.Model):
 
     def sumnail_detail(self): #최신
         if len(self.images.name) > 5: #5글자 이상일경우로 했음!! 그러면 당연히 5글자 이상 아닌게 없을 것임!
-            return "<img style='width:100%' src="+self.images.url+"/>"
+            return "<img style='width:100%' src="+self.images.url+">"
         else:  #하루 지나면 안 최신
             return ""
 

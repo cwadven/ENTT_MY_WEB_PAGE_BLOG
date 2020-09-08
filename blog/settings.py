@@ -13,7 +13,7 @@ SECRET_KEY = 'yz7@jfui8trh9a2rl#323szq*u8^+#k64cb+n+k(_q4d_(n4-!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ["http://entt.shop/", "*"]
+ALLOWED_HOSTS = ["*"]
 
 
 # Application definition
