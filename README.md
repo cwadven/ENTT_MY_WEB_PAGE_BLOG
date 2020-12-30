@@ -36,7 +36,7 @@
 
 ## 서비스 주소
 **주소 :**<br>
-http://dalgona.shop/
+https://dalgona.shop/
 <br><br>
 
 ## 개발자
