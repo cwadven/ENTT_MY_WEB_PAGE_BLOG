@@ -26,12 +26,12 @@
 
 <h3 align="center">갤러리게시판</h3>
 <p align="center">
-<img alt="wkudorm" src="https://github.com/cwadven/ENTT_MY_WEB_PAGE_BLOG/blob/master/assets/seq5.PNG"/>
+<img alt="wkudorm" src="https://github.com/cwadven/ENTT_MY_WEB_PAGE_BLOG/blob/master/assets/seq6.PNG"/>
 </p>
 
 <h3 align="center">마이페이지</h3>
 <p align="center">
-<img alt="wkudorm" src="https://github.com/cwadven/ENTT_MY_WEB_PAGE_BLOG/blob/master/assets/seq6.PNG"/>
+<img alt="wkudorm" src="https://github.com/cwadven/ENTT_MY_WEB_PAGE_BLOG/blob/master/assets/seq5.PNG"/>
 </p>
 
 ## 서비스 주소
