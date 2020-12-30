@@ -45,7 +45,7 @@ http://dalgona.shop/
 
 - Github : https://github.com/cwadven
 - Backend : Django
-- Service : Nginx, SQLite
+- Service : Nginx, SQLite, SSL
 - Server : Nginx, uwsgi
 - 기술스택 : Django
 - 개발기간 : <br>
