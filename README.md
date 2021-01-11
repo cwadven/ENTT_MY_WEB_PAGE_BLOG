@@ -36,7 +36,8 @@
 
 ## 서비스 주소
 **주소 :**<br>
-https://dalgona.shop/
+https://dalgona.shop/<br>
+현재는 닫혀져 있는 주소입니다!
 <br><br>
 
 ## 개발자
